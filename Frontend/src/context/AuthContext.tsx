@@ -3,7 +3,13 @@ import authService from '../services/auth.service';
 
 interface User {
   id: number;
+  name: string;
   email: string;
+  phone?: string;
+  studentId?: string;
+  institution?: string;
+  course?: string;
+  year?: string;
   createdAt: string;
 }
 

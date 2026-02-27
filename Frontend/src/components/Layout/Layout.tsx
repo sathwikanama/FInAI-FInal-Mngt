@@ -1,13 +1,12 @@
 // src/components/Layout/Layout.tsx
 import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
 // src/components/Layout/Layout.tsx
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const location = useLocation();
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -19,7 +18,7 @@ const Layout = () => {
       />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white">
         {/* Navbar */}
         <Navbar 
           onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}

@@ -9,7 +9,12 @@ const dashboardRoutes = require('./routes/dashboard.route');
 const transactionRoutes = require('./routes/transaction.routes');
 const categorySummaryRoutes = require('./routes/category-summary.route');
 const insightsRoutes = require('./routes/insightsRoutes');
+const userRoutes = require('./routes/userRoutes');
+const expensesRoutes = require('./routes/expensesRoutes');
 console.log("✅ category summary route loaded");
+console.log("✅ insights routes loaded");
+console.log("✅ user routes loaded");
+console.log("✅ expenses routes loaded");
 
 
 
@@ -48,6 +53,8 @@ app.use('/api', healthRoutes);
 app.use('/api', messageRoutes);
 app.use('/api/auth', require('./routes/auth.route'));
 app.use('/api/profile', profileRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/expenses', expensesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/transactions', categorySummaryRoutes);

@@ -1,6 +1,7 @@
 // src/components/Layout/Navbar.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // ✅ ADD THIS
+import { useAuth } from '../../context/AuthContext';
 
 export interface NavbarProps {
   onSidebarToggle?: () => void;
@@ -20,10 +21,10 @@ const Navbar: React.FC<NavbarProps> = ({
   onSidebarToggle,
   isSidebarCollapsed = false,
   title = 'Dashboard',
-  user = { name: 'John Doe', email: 'john@example.com', role: 'Admin' },
   showNotifications = true,
   showSearch = true,
 }) => {
+  const { user } = useAuth(); // Get user from AuthContext
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,8 +106,10 @@ const Navbar: React.FC<NavbarProps> = ({
 
             {/* Title */}
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-gray-800">{title}</h1>
-              <p className="text-xs text-gray-500 hidden md:block">Welcome back, {user.name}</p>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white">{title}</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 hidden md:block">
+                Welcome back, {user?.name || 'User'}
+              </p>
             </div>
 
             {/* Search bar (desktop) */}
@@ -208,11 +211,11 @@ const Navbar: React.FC<NavbarProps> = ({
                 aria-label="User menu"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
+                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="font-medium text-gray-700">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.role}</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-200">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || ''}</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-500 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -220,7 +223,7 @@ const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               {/* User dropdown - FIXED ✅ */}
-              {isUserMenuOpen && (
+              {isUserMenuOpen && user && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                   <div className="p-4 border-b">
                     <p className="font-semibold">{user.name}</p>

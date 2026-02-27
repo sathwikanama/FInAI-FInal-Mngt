@@ -84,15 +84,30 @@ const getTransactionsController = async (req, res) => {
     });
   }
 
+  // Extract filter parameters from query
+  const { category, month, search, page, limit } = req.query;
+  
+  // Build filters object
+  const filters = {
+  page: Number(page) || 1,
+  limit: Number(limit) || 10
+};
+
   try {
-    const transactions = await getUserTransactions(userId);
+    const result = await getUserTransactions(userId, filters);
     
-    console.log(`✅ Retrieved ${transactions.length} transactions for user ${userId}`);
+    console.log(`✅ Retrieved ${result.transactions.length} transactions for user ${userId} with filters:`, filters);
 
     res.json({
       success: true,
       message: 'Transactions retrieved successfully',
-      data: { transactions }
+      data: {
+  transactions: result.transactions,
+  total: result.total,
+  page: result.page,
+  totalPages: result.totalPages,
+  limit: result.limit
+}
     });
   } catch (error) {
     console.error('❌ Get transactions error:', error);

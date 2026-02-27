@@ -53,23 +53,35 @@ const createTransaction = async (userId, amount, type, category, description) =>
   }
 };
 
-const getUserTransactions = async (userId) => {
-  const connection = await db.getConnection();
+const getUserTransactions = async (userId, filters = {}) => {
   try {
-    const [transactions] = await connection.execute(
-      'SELECT id, amount, type, category, description, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC',
-      [userId]
-    );
-    return transactions.map(transaction => ({
-      id: transaction.id,
-      amount: transaction.amount,
-      type: transaction.type,
-      category: transaction.category,
-      description: transaction.description,
-      createdAt: transaction.created_at
-    }));
-  } finally {
-    connection.release();
+    const page = Number(filters.page) > 0 ? Number(filters.page) : 1;
+    const limit = Number(filters.limit) > 0 ? Number(filters.limit) : 10;
+    const offset = (page - 1) * limit;
+
+    console.log("POOL DEBUG:", { userId, limit, offset });
+
+    const query = `
+      SELECT id, amount, type, category, description, created_at
+      FROM transactions
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    const [rows] = await db.execute(query, [Number(userId)]);
+
+    return {
+      transactions: rows,
+      total: rows.length,
+      page,
+      totalPages: 1,
+      limit
+    };
+
+  } catch (error) {
+    console.error("POOL ERROR:", error);
+    throw error;
   }
 };
 

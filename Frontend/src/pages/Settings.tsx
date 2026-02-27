@@ -2,23 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Cog6ToothIcon,
-  UserCircleIcon,
   BellIcon,
   CreditCardIcon,
   ShieldCheckIcon,
-  GlobeAltIcon,
-  MoonIcon,
-  SunIcon,
   EyeIcon,
   EyeSlashIcon,
-  DevicePhoneMobileIcon,
-  EnvelopeIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 
 const Settings: React.FC = () => {
   const navigate = useNavigate(); // ✅ For navigation
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -28,29 +21,26 @@ const Settings: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // User profile data
-  const profile = {
-    name: 'Eesha Rathnam',
-    email: 'eesha.rathnam@example.com',
-    phone: '+91 98765 43210',
-    studentId: '22311A12G5',
-    institution: 'Sreenidhi Institute of Science and Technology',
-    course: 'Information Technology',
-    year: 'Final Year',
-  };
+  // Budget settings with reactive state
+  const [budgets, setBudgets] = useState({
+    food: 5000,
+    shopping: 3000,
+    transport: 2000,
+    entertainment: 1500,
+    rent: 8000,
+  });
 
-  // Budget settings
-  const budgetSettings = {
-    monthlyBudget: 25000,
-    notifyAt: 80, // percentage
-    categories: [
-      { name: 'Food & Dining', budget: 5000, current: 3250 },
-      { name: 'Shopping', budget: 3000, current: 2500 },
-      { name: 'Transport', budget: 2000, current: 1050 },
-      { name: 'Entertainment', budget: 1500, current: 1200 },
-      { name: 'Rent', budget: 8000, current: 8000 },
-    ]
-  };
+  const [monthlyBudget, setMonthlyBudget] = useState(25000);
+  const [notifyAt, setNotifyAt] = useState(80);
+
+  // Category data with current spending
+  const categoryData = [
+    { key: 'food', name: 'Food & Dining', current: 3250 },
+    { key: 'shopping', name: 'Shopping', current: 2500 },
+    { key: 'transport', name: 'Transport', current: 1050 },
+    { key: 'entertainment', name: 'Entertainment', current: 1200 },
+    { key: 'rent', name: 'Rent', current: 8000 },
+  ];
 
   // Privacy settings
   const privacySettings = [
@@ -88,132 +78,29 @@ const Settings: React.FC = () => {
     alert('Budget settings updated!');
   };
 
+  const handleBudgetChange = (category: string, value: number) => {
+    setBudgets(prev => ({
+      ...prev,
+      [category]: value
+    }));
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-          <p className="text-gray-600">Manage your account and application preferences</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Settings</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage your account and application preferences</p>
         </div>
-        <div className="p-3 bg-primary-50 rounded-lg">
-          <Cog6ToothIcon className="h-6 w-6 text-primary-600" />
+        <div className="p-3 bg-primary-50 dark:bg-primary-900 rounded-lg">
+          <Cog6ToothIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Profile & Account */}
+        {/* Left Column - Account Settings */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Profile Section */}
-          <div className="card">
-            <div className="flex items-center mb-6">
-              <UserCircleIcon className="h-6 w-6 text-gray-600 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-800">Profile Information</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  defaultValue={profile.name}
-                  className="input-field"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="flex">
-                  <input
-                    type="email"
-                    defaultValue={profile.email}
-                    className="input-field rounded-r-none"
-                  />
-                  <div className="p-2 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-                    <EnvelopeIcon className="h-5 w-5 text-gray-500" />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <div className="flex">
-                  <input
-                    type="tel"
-                    defaultValue={profile.phone}
-                    className="input-field rounded-r-none"
-                  />
-                  <div className="p-2 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-                    <DevicePhoneMobileIcon className="h-5 w-5 text-gray-500" />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student ID
-                </label>
-                <input
-                  type="text"
-                  defaultValue={profile.studentId}
-                  disabled
-                  className="input-field bg-gray-50"
-                />
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Institution
-              </label>
-              <input
-                type="text"
-                defaultValue={profile.institution}
-                className="input-field"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Course
-                </label>
-                <input
-                  type="text"
-                  defaultValue={profile.course}
-                  className="input-field"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Year
-                </label>
-                <select className="input-field">
-                  <option>First Year</option>
-                  <option>Second Year</option>
-                  <option>Third Year</option>
-                  <option selected>Final Year</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <button className="btn-primary">
-                Update Profile
-              </button>
-              <p className="text-sm text-gray-500 mt-2">
-                Changes will be reflected across all your devices
-              </p>
-            </div>
-          </div>
-
           {/* Budget Settings */}
           <div className="card">
             <div className="flex items-center mb-6">
@@ -232,7 +119,8 @@ const Settings: React.FC = () => {
                   </span>
                   <input
                     type="number"
-                    defaultValue={budgetSettings.monthlyBudget}
+                    value={monthlyBudget}
+                    onChange={(e) => setMonthlyBudget(Number(e.target.value))}
                     className="input-field rounded-l-none"
                   />
                 </div>
@@ -251,7 +139,8 @@ const Settings: React.FC = () => {
                       type="range"
                       min="50"
                       max="100"
-                      defaultValue={budgetSettings.notifyAt}
+                      value={notifyAt}
+                      onChange={(e) => setNotifyAt(Number(e.target.value))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                     />
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -266,7 +155,8 @@ const Settings: React.FC = () => {
                   <div className="w-16">
                     <input
                       type="number"
-                      defaultValue={budgetSettings.notifyAt}
+                      value={notifyAt}
+                      onChange={(e) => setNotifyAt(Number(e.target.value))}
                       className="input-field text-center"
                     />
                   </div>
@@ -277,32 +167,38 @@ const Settings: React.FC = () => {
               <div>
                 <h3 className="font-medium text-gray-700 mb-4">Category Budgets</h3>
                 <div className="space-y-4">
-                  {budgetSettings.categories.map((category) => (
-                    <div key={category.name} className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="font-medium text-gray-700">{category.name}</span>
-                          <span className="text-gray-600">
-                            ₹{category.current} / ₹{category.budget}
-                          </span>
+                  {categoryData.map((category) => {
+                    const budget = budgets[category.key as keyof typeof budgets];
+                    const percent = (category.current / budget) * 100;
+                    
+                    return (
+                      <div key={category.key} className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-medium text-gray-700">{category.name}</span>
+                            <span className="text-gray-600">
+                              ₹{category.current} / ₹{budget}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                percent > 0.9 ? 'bg-red-500' :
+                                percent > 0.7 ? 'bg-yellow-500' : 'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(percent, 100)}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${
-                              (category.current / category.budget) > 0.9 ? 'bg-red-500' :
-                              (category.current / category.budget) > 0.7 ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}
-                            style={{ width: `${Math.min((category.current / category.budget) * 100, 100)}%` }}
-                          />
-                        </div>
+                        <input
+                          type="number"
+                          value={budget}
+                          onChange={(e) => handleBudgetChange(category.key, Number(e.target.value))}
+                          className="ml-4 w-24 input-field"
+                        />
                       </div>
-                      <input
-                        type="number"
-                        defaultValue={category.budget}
-                        className="ml-4 w-24 input-field"
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               
@@ -476,74 +372,6 @@ const Settings: React.FC = () => {
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                 </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Appearance */}
-          <div className="card">
-            <div className="flex items-center mb-6">
-              <GlobeAltIcon className="h-6 w-6 text-gray-600 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-800">Appearance</h2>
-            </div>
-            
-            <div className="space-y-6">
-              <div>
-                <p className="font-medium text-gray-700 mb-4">Theme</p>
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => setDarkMode(false)}
-                    className={`flex-1 p-4 border rounded-lg flex flex-col items-center ${
-                      !darkMode 
-                        ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <SunIcon className="h-8 w-8 text-gray-600 mb-2" />
-                    <span className="font-medium">Light</span>
-                  </button>
-                  <button
-                    onClick={() => setDarkMode(true)}
-                    className={`flex-1 p-4 border rounded-lg flex flex-col items-center ${
-                      darkMode 
-                        ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <MoonIcon className="h-8 w-8 text-gray-600 mb-2" />
-                    <span className="font-medium">Dark</span>
-                  </button>
-                </div>
-              </div>
-              
-              <div>
-                <p className="font-medium text-gray-700 mb-4">Language</p>
-                <select className="input-field">
-                  <option>English (US)</option>
-                  <option>Hindi</option>
-                  <option>Telugu</option>
-                  <option>Tamil</option>
-                  <option>Kannada</option>
-                </select>
-              </div>
-              
-              <div>
-                <p className="font-medium text-gray-700 mb-4">Currency</p>
-                <select className="input-field">
-                  <option selected>Indian Rupee (₹)</option>
-                  <option>US Dollar ($)</option>
-                  <option>Euro (€)</option>
-                  <option>British Pound (£)</option>
-                </select>
-              </div>
-              
-              <div>
-                <p className="font-medium text-gray-700 mb-4">Date Format</p>
-                <select className="input-field">
-                  <option selected>DD/MM/YYYY</option>
-                  <option>MM/DD/YYYY</option>
-                  <option>YYYY-MM-DD</option>
-                </select>
               </div>
             </div>
           </div>
