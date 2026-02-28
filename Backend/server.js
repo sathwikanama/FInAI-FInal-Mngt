@@ -15,12 +15,6 @@ const insightsRoutes = require('./routes/insightsRoutes');
 const userRoutes = require('./routes/userRoutes');
 const expensesRoutes = require('./routes/expensesRoutes');
 const budgetRoutes = require('./routes/budget-complex');
-console.log("✅ category summary route loaded");
-console.log("✅ insights routes loaded");
-console.log("✅ user routes loaded");
-console.log("✅ expenses routes loaded");
-console.log("✅ budget routes loaded");
-
 
 const analysisRoutes = require('./routes/analysisRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
@@ -29,7 +23,6 @@ const anomalyRoutes = require('./routes/anomalyRoutes');
 const ocrRoutes = require('./routes/ocrRoutes');
 const analyticsRoutes = require('./routes/analytics');
 
-
 // DB connections
 const db = require('./config/db');
 const { sequelize } = require('./models');
@@ -37,14 +30,11 @@ const { sequelize } = require('./models');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-console.log("✅ category summary route loaded");
-
 
 // =======================
 // 🔌 DATABASE CONNECTION
 // =======================
 
-// Test MySQL pool connection
 db.getConnection()
   .then(conn => {
     console.log('✅ MySQL connected successfully');
@@ -54,7 +44,6 @@ db.getConnection()
     console.error('❌ MySQL connection failed:', err.message);
   });
 
-// ✅ SAFE SYNC (does NOT delete data)
 sequelize.sync({ alter: false })
   .then(() => {
     console.log('✅ Sequelize models synced');
@@ -119,8 +108,7 @@ app.use((err, req, res, next) => {
   if (err.name === 'ValidationError') {
     status = 400;
     message = 'Validation failed';
-  }
-  else if (err.code === 'ER_DUP_ENTRY') {
+  } else if (err.code === 'ER_DUP_ENTRY') {
     status = 409;
     message = 'Duplicate entry';
   }

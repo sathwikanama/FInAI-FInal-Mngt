@@ -1,133 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { UserCircleIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from "react";
+import { UserCircleIcon, PencilIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface UserProfile {
-  fullName: string;
+  full_name: string;
   email: string;
   phone: string;
-  studentId: string;
-  institution: string;
-  course: string;
-  year: string;
+  country: string;
+  city: string;
+  occupation: string;
 }
 
 const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+
   const [profile, setProfile] = useState<UserProfile>({
-    fullName: '',
-    email: '',
-    phone: '',
-    studentId: '',
-    institution: '',
-    course: '',
-    year: ''
+    full_name: "",
+    email: "",
+    phone: "",
+    country: "",
+    city: "",
+    occupation: ""
   });
 
-  // Load user data from localStorage on component mount
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+
+  // ✅ FETCH PROFILE
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setProfile({
-        fullName: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        studentId: user.studentId || '',
-        institution: user.institution || '',
-        course: user.course || '',
-        year: user.year || ''
-      });
-    }
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch("http://localhost:5001/api/profile", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          setProfile(data.data);
+          setEditedProfile(data.data);
+
+          // Save globally
+          localStorage.setItem("profile", JSON.stringify(data.data));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
-  const [editedProfile, setEditedProfile] = useState<UserProfile>({ ...profile });
-
-  const handleEdit = () => {
-    setEditedProfile({ ...profile });
-    setIsEditing(true);
-  };
+  const handleEdit = () => setIsEditing(true);
 
   const handleCancel = () => {
-    setEditedProfile({ ...profile });
+    setEditedProfile(profile);
     setIsEditing(false);
   };
 
+  // ✅ SAVE PROFILE
   const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      // Send PUT request to backend API
-      const response = await fetch('http://localhost:5001/api/user/update', {
-        method: 'PUT',
+      const res = await fetch("http://localhost:5001/api/profile", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          name: editedProfile.fullName,
-          email: editedProfile.email,
-          phone: editedProfile.phone,
-          studentId: editedProfile.studentId,
-          institution: editedProfile.institution,
-          course: editedProfile.course,
-          year: editedProfile.year
-        })
+        body: JSON.stringify(editedProfile)
       });
 
-      const data = await response.json();
-      
+      const data = await res.json();
+
       if (data.success) {
-        // Update localStorage with new user data
-        const updatedUser = {
-          ...JSON.parse(localStorage.getItem('user') || '{}'),
-          name: editedProfile.fullName,
-          email: editedProfile.email,
-          phone: editedProfile.phone,
-          studentId: editedProfile.studentId,
-          institution: editedProfile.institution,
-          course: editedProfile.course,
-          year: editedProfile.year
-        };
-        
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setProfile({ ...editedProfile });
+        setProfile(data.data);
+        setEditedProfile(data.data);
         setIsEditing(false);
-        alert('Profile updated successfully!');
+
+        // ⭐ update everywhere instantly
+        localStorage.setItem("profile", JSON.stringify(data.data));
+
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        storedUser.name = data.data.full_name;
+        localStorage.setItem("user", JSON.stringify(storedUser));
+
+        // ⭐ notify Navbar + Sidebar
+        window.dispatchEvent(new Event("profileUpdated"));
+
+        alert("Profile updated successfully!");
       } else {
-        alert('Failed to update profile: ' + (data.message || 'Unknown error'));
+        alert(data.message || "Failed to update profile");
       }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      alert('Failed to update profile. Please try again.');
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
     }
   };
 
   const handleChange = (field: keyof UserProfile, value: string) => {
-    setEditedProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setEditedProfile(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
           <p className="text-gray-600">View and manage your account details</p>
         </div>
-        <div className="p-3 bg-primary-50 rounded-lg">
-          <UserCircleIcon className="h-6 w-6 text-primary-600" />
+
+        <div className="p-3 bg-blue-50 rounded-lg">
+          <UserCircleIcon className="h-6 w-6 text-blue-600" />
         </div>
       </div>
 
-      {/* User Information Card */}
+      {/* CARD */}
       <div className="card">
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-800">User Information</h2>
+
           {!isEditing && (
             <button
               onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <PencilIcon className="h-4 w-4" />
               Edit Profile
@@ -135,116 +137,94 @@ const Profile: React.FC = () => {
           )}
         </div>
 
+        {/* FORM GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
-            </label>
+
+          {/* NAME */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Full Name</label>
             <input
-              type="text"
-              value={isEditing ? editedProfile.fullName : profile.fullName}
-              onChange={(e) => handleChange('fullName', e.target.value)}
+              value={isEditing ? editedProfile.full_name : profile.full_name}
+              onChange={(e) => handleChange("full_name", e.target.value)}
               disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              className="input-field w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+          {/* EMAIL */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Email</label>
             <input
-              type="email"
-              value={isEditing ? editedProfile.email : profile.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              value={
+                profile.email ||
+                JSON.parse(localStorage.getItem("user") || "{}")?.email ||
+                ""
+              }
+              disabled
+              className="input-field w-full bg-gray-50"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
+          {/* PHONE */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Phone</label>
             <input
-              type="tel"
               value={isEditing ? editedProfile.phone : profile.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
+              onChange={(e) => handleChange("phone", e.target.value)}
               disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              className="input-field w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Student ID
-            </label>
+          {/* COUNTRY */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Country</label>
             <input
-              type="text"
-              value={isEditing ? editedProfile.studentId : profile.studentId}
-              onChange={(e) => handleChange('studentId', e.target.value)}
+              value={isEditing ? editedProfile.country : profile.country}
+              onChange={(e) => handleChange("country", e.target.value)}
               disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              className="input-field w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Institution
-            </label>
+          {/* CITY */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">City</label>
             <input
-              type="text"
-              value={isEditing ? editedProfile.institution : profile.institution}
-              onChange={(e) => handleChange('institution', e.target.value)}
+              value={isEditing ? editedProfile.city : profile.city}
+              onChange={(e) => handleChange("city", e.target.value)}
               disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              className="input-field w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Course
-            </label>
+          {/* OCCUPATION */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Occupation</label>
             <input
-              type="text"
-              value={isEditing ? editedProfile.course : profile.course}
-              onChange={(e) => handleChange('course', e.target.value)}
+              value={isEditing ? editedProfile.occupation : profile.occupation}
+              onChange={(e) => handleChange("occupation", e.target.value)}
               disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
+              className="input-field w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Year
-            </label>
-            <select
-              value={isEditing ? editedProfile.year : profile.year}
-              onChange={(e) => handleChange('year', e.target.value)}
-              disabled={!isEditing}
-              className={`input-field ${!isEditing ? 'bg-gray-50' : ''}`}
-            >
-              <option>First Year</option>
-              <option>Second Year</option>
-              <option>Third Year</option>
-              <option>Final Year</option>
-            </select>
-          </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* ACTION BUTTONS */}
         {isEditing && (
-          <div className="mt-8 pt-6 border-t border-gray-200 flex gap-4">
+          <div className="mt-8 pt-6 border-t flex gap-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               <CheckIcon className="h-4 w-4" />
               Save Changes
             </button>
+
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             >
               <XMarkIcon className="h-4 w-4" />
               Cancel
@@ -252,13 +232,6 @@ const Profile: React.FC = () => {
           </div>
         )}
 
-        {!isEditing && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
-              Last updated: {new Date().toLocaleDateString()}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

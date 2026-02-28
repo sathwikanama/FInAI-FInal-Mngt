@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
@@ -17,33 +17,61 @@ import Profile from './pages/Profile';
 import HelpSupport from './pages/HelpSupport';
 
 
+// 🔹 Wrapper so we can use Auth inside routes
+const AppRoutes = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return null;
+
+  return (
+    <Routes>
+
+      {/* LOGIN ROUTE */}
+      <Route
+        path="/login"
+        element={
+          isAuthenticated
+            ? <Navigate to="/" replace />
+            : <Login />
+        }
+      />
+
+      {/* PROTECTED ROUTES */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="expenses" element={<Expenses />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="predictions" element={<Predictions />} />
+        <Route path="anomalies" element={<Anomalies />} />
+        <Route path="scan" element={<ReceiptScanner />} />
+        <Route path="receipt-history" element={<ReceiptHistory />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="help" element={<HelpSupport />} />
+      </Route>
+
+      {/* FALLBACK ROUTE */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+
+    </Routes>
+  );
+};
+
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Toaster position="top-right" />
-        
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="expenses" element={<Expenses />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="predictions" element={<Predictions />} />
-            <Route path="anomalies" element={<Anomalies />} />
-            <Route path="scan" element={<ReceiptScanner />} />
-            <Route path="receipt-history" element={<ReceiptHistory />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="help" element={<HelpSupport />} />
-          </Route>
-        </Routes>
+        <AppRoutes />
       </Router>
     </AuthProvider>
   );

@@ -11,11 +11,7 @@ const Layout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar - REMOVE activePath prop */}
-      <Sidebar 
-        collapsed={sidebarCollapsed}
-        onCollapseChange={setSidebarCollapsed}
-        // REMOVE THIS LINE: activePath={location.pathname}
-      />
+     <Sidebar />
       
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white">

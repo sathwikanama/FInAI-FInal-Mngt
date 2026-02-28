@@ -1,15 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import authService from '../services/auth.service';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import authService from "../services/auth.service";
 
 interface User {
   id: number;
   name: string;
   email: string;
-  phone?: string;
-  studentId?: string;
-  institution?: string;
-  course?: string;
-  year?: string;
   createdAt: string;
 }
 
@@ -25,37 +20,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🔥 Check auth on app start
+  // ✅ CHECK AUTH ON APP LOAD
   useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem("token");
-      const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-      if (storedToken) {
-        setToken(storedToken);
-      }
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    } else {
+      setToken(null);
+      setUser(null);
+    }
 
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-
-      setIsLoading(false);
-    };
-
-    initAuth();
+    setIsLoading(false);
   }, []);
 
-  // ✅ LOGIN FIXED
-const login = async (email: string, password: string) => {
+  // ✅ LOGIN
+  const login = async (email: string, password: string) => {
   try {
     const response = await fetch("http://localhost:5001/api/auth/login", {
       method: "POST",
@@ -69,11 +57,10 @@ const login = async (email: string, password: string) => {
 
     if (data.success) {
 
-      // ✅ Save to localStorage
+      // ⭐ SAVE FULL USER FROM BACKEND (IMPORTANT)
       localStorage.setItem("token", data.data.token);
       localStorage.setItem("user", JSON.stringify(data.data.user));
 
-      // ✅ IMPORTANT: update React state
       setUser(data.data.user);
       setToken(data.data.token);
 
@@ -83,13 +70,11 @@ const login = async (email: string, password: string) => {
     return { success: false, message: data.message };
 
   } catch (err) {
-    console.error("Login error:", err);
     return { success: false, message: "Server error" };
   }
 };
 
-
-
+  // ✅ SIGNUP
   const signup = async (email: string, password: string) => {
     try {
       const response = await authService.signup(email, password);
@@ -99,9 +84,11 @@ const login = async (email: string, password: string) => {
     }
   };
 
+  // ✅ LOGOUT
   const logout = async () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("profile");
 
     setUser(null);
     setToken(null);
@@ -113,7 +100,7 @@ const login = async (email: string, password: string) => {
     user,
     token,
     isLoading,
-    isAuthenticated: !!token,
+    isAuthenticated: !!token && !!user, // ⭐ FIXED LINE
     login,
     signup,
     logout,
@@ -122,7 +109,7 @@ const login = async (email: string, password: string) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used inside AuthProvider");
   return context;
