@@ -1,81 +1,138 @@
 require('dotenv').config();
 const db = require('../config/db');
 
+const categories = {
+  "Food & Dining": ["Zomato", "Swiggy", "Cafe Coffee", "Lunch with Friends"],
+  "Transport": ["Uber", "Ola", "Metro Recharge", "Fuel"],
+  "Shopping": ["Amazon", "Flipkart", "Clothes Purchase", "Electronics"],
+  "Bills": ["Electricity Bill", "Water Bill", "Internet Bill", "Mobile Recharge"],
+  "Entertainment": ["Netflix", "Movie Tickets", "Spotify", "Weekend Outing"],
+  "Healthcare": ["Pharmacy", "Doctor Visit", "Health Checkup"],
+  "Education": ["Books", "Online Course", "College Fees"],
+  "Other": ["Groceries", "Household Items", "Gifts"],
+  "Rent": ["House Rent"]
+};
+
+const ranges = {
+  "Food & Dining": [150, 1200],
+  "Transport": [50, 500],
+  "Shopping": [500, 5000],
+  "Bills": [500, 10000],
+  "Healthcare": [500, 8000],
+  "Education": [1000, 50000],
+  "Entertainment": [300, 3000],
+  "Other": [200, 3000],
+  "Rent": [10000, 25000]
+};
+
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomDateWithinLastYear() {
+  const now = new Date();
+  const past = new Date();
+  past.setDate(now.getDate() - 365);
+  return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+}
+
 const generateHistory = async (userId) => {
   let connection;
-  
+
   try {
     connection = await db.getConnection();
-    
-    const currentDate = new Date();
-    let monthlyIncome = 30000;
-    
-    for (let monthOffset = 11; monthOffset >= 0; monthOffset--) {
-      // Calculate the date for this month
-      const transactionDate = new Date(currentDate);
-      transactionDate.setMonth(currentDate.getMonth() - monthOffset);
-      transactionDate.setDate(15); // Set to 15th of each month
-      
-      const year = transactionDate.getFullYear();
-      const month = transactionDate.getMonth() + 1; // JavaScript months are 0-indexed
-      const formattedDate = `${year}-${month.toString().padStart(2, '0')}-15 10:00:00`;
-      
-      console.log(`Generating data for: ${formattedDate}`);
-      
-      // Add income transaction
-      await connection.execute(
-        'INSERT INTO transactions (user_id, amount, type, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, monthlyIncome, 'income', 'Salary', `Monthly salary for ${year}-${month.toString().padStart(2, '0')}`, formattedDate]
-      );
-      
-      // Calculate expense amounts with slight monthly increase
-      const monthlyIncrease = (11 - monthOffset) * 50; // Increase by $50 per category per month
-      
-      // Food expenses (4000–6000 + monthly increase)
-      const foodAmount = 5000 + Math.floor(Math.random() * 1000) + monthlyIncrease;
-      await connection.execute(
-        'INSERT INTO transactions (user_id, amount, type, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, foodAmount, 'expense', 'Food', `Monthly food expenses for ${year}-${month.toString().padStart(2, '0')}`, formattedDate]
-      );
-      
-      // Transport expenses (1000–2000 + monthly increase)
-      const transportAmount = 1500 + Math.floor(Math.random() * 500) + monthlyIncrease;
-      await connection.execute(
-        'INSERT INTO transactions (user_id, amount, type, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, transportAmount, 'expense', 'Transport', `Monthly transport expenses for ${year}-${month.toString().padStart(2, '0')}`, formattedDate]
-      );
-      
-      // Entertainment expenses (1500–3000 + monthly increase)
-      const entertainmentAmount = 2250 + Math.floor(Math.random() * 750) + monthlyIncrease;
-      await connection.execute(
-        'INSERT INTO transactions (user_id, amount, type, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, entertainmentAmount, 'expense', 'Entertainment', `Monthly entertainment expenses for ${year}-${month.toString().padStart(2, '0')}`, formattedDate]
-      );
-      
-      // Utilities expenses (2000–3500 + monthly increase)
-      const utilitiesAmount = 2750 + Math.floor(Math.random() * 750) + monthlyIncrease;
-      await connection.execute(
-        'INSERT INTO transactions (user_id, amount, type, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, utilitiesAmount, 'expense', 'Utilities', `Monthly utilities expenses for ${year}-${month.toString().padStart(2, '0')}`, formattedDate]
-      );
-      
-      // Increase income for next month
-      monthlyIncome += 1000;
-      
-      console.log(`Month ${year}-${month.toString().padStart(2, '0')}: Income=${monthlyIncome-1000}, Food=${foodAmount}, Transport=${transportAmount}, Entertainment=${entertainmentAmount}, Utilities=${utilitiesAmount}`);
+    console.log("Generating realistic financial data...");
+
+    let totalExpense = 0;
+    let transactions = [];
+
+    // ---- Salary entries ----
+    for (let i = 0; i < 12; i++) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      d.setDate(random(1,5));
+
+      transactions.push([
+        userId,
+        100000,
+        "income",
+        "Salary",
+        "Salary Credit",
+        d
+      ]);
     }
-    
-    console.log('Financial history generated successfully');
-    
-  } catch (error) {
-    console.error('Error generating financial history:', error);
+
+    // ---- Rent monthly ----
+    for (let i = 0; i < 12; i++) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      d.setDate(random(3,10));
+
+      const amt = random(...ranges["Rent"]);
+      totalExpense += amt;
+
+      transactions.push([
+        userId,
+        amt,
+        "expense",
+        "Rent",
+        "House Rent",
+        d
+      ]);
+    }
+
+    // ---- Random expenses ----
+    const targetExpense = random(700000, 800000);
+
+    while (totalExpense < targetExpense && transactions.length < 450) {
+      const category = randomItem(Object.keys(categories));
+      if (category === "Rent") continue;
+
+      let amount = random(...ranges[category]);
+      const description = randomItem(categories[category]);
+      const date = randomDateWithinLastYear();
+
+      // Weekend boost
+      const day = date.getDay();
+      if ((day === 5 || day === 6 || day === 0) &&
+          (category === "Food & Dining" || category === "Entertainment")) {
+        amount = Math.round(amount * 1.3);
+      }
+
+      totalExpense += amount;
+
+      transactions.push([
+        userId,
+        amount,
+        "expense",
+        category,
+        description,
+        date
+      ]);
+    }
+
+    // ---- Bulk insert ----
+    const query = `
+      INSERT INTO transactions
+      (user_id, amount, type, category, description, created_at)
+      VALUES ?
+    `;
+
+    await connection.query(query, [transactions]);
+
+    console.log(`Inserted ${transactions.length} transactions`);
+    console.log(`Total expense: ₹${totalExpense}`);
+
+  } catch (err) {
+    console.error(err);
   } finally {
-    if (connection) {
-      connection.release();
-      console.log('Database connection closed');
-    }
+    if (connection) connection.release();
+    process.exit();
   }
 };
 
-// Generate history for user ID 1
 generateHistory(1);
