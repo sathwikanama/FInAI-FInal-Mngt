@@ -1,13 +1,13 @@
-
 const express = require('express');
 const router = express.Router();
 
+const authMiddleware = require('../middleware/authMiddleware'); // ✅ FIXED
+const db = require('../config/db');
+
+// Test route
 router.get('/test', (req, res) => {
   res.send("CATEGORY ROUTE WORKING");
 });
-
-const {authMiddleware } = require('../middleware/authMiddleware');
-const db = require('../config/db');   // ✅ correct DB file
 
 // GET /api/transactions/category-summary
 router.get('/category-summary', authMiddleware, async (req, res) => {

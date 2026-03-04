@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { authMiddleware } = require("../middleware/authMiddleware");
+
+const authMiddleware = require("../middleware/authMiddleware"); // ✅ FIXED
 const { getTransactionsController } = require("../controllers/transaction.controller");
 
 // GET all expenses with authentication

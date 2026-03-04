@@ -1,7 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('../middleware/authMiddleware');
-const { createTransactionController, getTransactionsController, deleteTransactionController, updateTransactionController } = require('../controllers/transaction.controller');
+
+const authMiddleware = require('../middleware/authMiddleware'); // ✅ FIXED
+const { 
+  createTransactionController, 
+  getTransactionsController, 
+  deleteTransactionController, 
+  updateTransactionController 
+} = require('../controllers/transaction.controller');
+
 const { validateRequest, schemas } = require('../middleware/validation.middleware');
 
 // Apply auth middleware to all transaction routes

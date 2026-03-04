@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { saveBudgetSettingsController, getBudgetSettingsController } = require('../controllers/budget.controller');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // POST /api/budget/settings - Save budget settings
 router.post('/settings', authMiddleware, saveBudgetSettingsController);
