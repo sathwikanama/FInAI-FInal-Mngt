@@ -7,11 +7,9 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ⭐ dynamic user state (not static localStorage)
   const [displayName, setDisplayName] = useState("User");
   const [displayEmail, setDisplayEmail] = useState("");
 
-  // ⭐ function to load user data
   const loadUser = () => {
     const profile = JSON.parse(localStorage.getItem("profile") || "null");
     const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -28,23 +26,24 @@ const Sidebar = () => {
     setDisplayEmail(email);
   };
 
-  // ⭐ load on mount
   useEffect(() => {
     loadUser();
   }, []);
 
-  // ⭐ update instantly when profile changes
   useEffect(() => {
     const handleProfileUpdate = () => loadUser();
     window.addEventListener("profileUpdated", handleProfileUpdate);
     return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
   }, []);
 
+  // ✅ FIXED LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("profile");
+
     navigate("/login");
+    window.location.reload(); // ensures AuthContext updates
   };
 
   const navItems = [

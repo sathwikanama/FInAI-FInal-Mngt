@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from "@heroicons/react/24/outline";
 import NotificationDropdown from "../NotificationDropdown";
+
 interface NavbarProps {
   onSidebarToggle?: () => void;
   isSidebarCollapsed?: boolean;
@@ -32,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [displayName, setDisplayName] = useState("User");
   const [displayEmail, setDisplayEmail] = useState("");
 
-  // 🔹 Load user from localStorage
+  // Load user info
   const loadUser = () => {
     const profile = JSON.parse(localStorage.getItem("profile") || "null");
     const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -53,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({
     loadUser();
   }, []);
 
-  // 🔹 Update instantly after profile save
+  // Update after profile save
   useEffect(() => {
     const handleProfileUpdate = () => loadUser();
     window.addEventListener("profileUpdated", handleProfileUpdate);
@@ -61,73 +62,85 @@ const Navbar: React.FC<NavbarProps> = ({
       window.removeEventListener("profileUpdated", handleProfileUpdate);
   }, []);
 
-  // 🔹 Update notification count
+  // Notification count
   useEffect(() => {
     const updateNotificationCount = () => {
       try {
         const stored = localStorage.getItem("budgetAlerts");
         const alerts = stored ? JSON.parse(stored) : [];
         setNotificationCount(alerts.length);
-      } catch (error) {
-        console.error('Error parsing budget alerts:', error);
+      } catch {
         setNotificationCount(0);
       }
     };
 
     updateNotificationCount();
-    
-    // Listen for storage changes
+
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'notifications' || e.key === 'budgetAlerts') {
+      if (e.key === "notifications" || e.key === "budgetAlerts") {
         updateNotificationCount();
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Check periodically for immediate updates
+    window.addEventListener("storage", handleStorageChange);
+
     const interval = setInterval(updateNotificationCount, 1000);
-    
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, []);
 
-  // 🔹 Close dropdowns when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+
       if (
         userMenuRef.current &&
         !userMenuRef.current.contains(event.target as Node)
       ) {
         setIsUserMenuOpen(false);
       }
-      // Close notification dropdown when clicking outside
-      const notificationElement = document.querySelector('[data-notification-dropdown]');
-      if (notificationElement && !notificationElement.contains(event.target as Node)) {
+
+      const notificationElement = document.querySelector(
+        "[data-notification-dropdown]"
+      );
+
+      if (
+        notificationElement &&
+        !notificationElement.contains(event.target as Node)
+      ) {
         setIsNotificationOpen(false);
       }
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("profile");
+
     navigate("/login");
+    window.location.reload();
   };
 
   return (
     <nav className="bg-white shadow-md border-b sticky top-0 z-30">
+
       <div className="px-6 flex justify-between items-center h-16">
 
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
+
           {onSidebarToggle && (
             <button
               onClick={onSidebarToggle}
@@ -153,43 +166,48 @@ const Navbar: React.FC<NavbarProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           )}
+
         </div>
 
-{/* RIGHT SIDE */}
-<div className="flex items-center gap-4">
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-4">
 
-  {/* NOTIFICATION BELL */}
-  {showNotifications && (
-    <div className="relative">
-      <button
-        className="relative p-2 rounded-full hover:bg-gray-100"
-        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-      >
-        <BellIcon className="h-6 w-6 text-gray-600" />
+          {/* NOTIFICATION */}
+          {showNotifications && (
+            <div className="relative">
 
-        {/* notification indicator */}
-        {notificationCount > 0 && (
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-        )}
-      </button>
+              <button
+                className="relative p-2 rounded-full hover:bg-gray-100"
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              >
+                <BellIcon className="h-6 w-6 text-gray-600" />
 
-      {isNotificationOpen && (
-        <div className="absolute right-0 mt-2 w-80 z-50" data-notification-dropdown>
-          <NotificationDropdown />
-        </div>
-      )}
-    </div>
-  )}
+                {notificationCount > 0 && (
+                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                )}
 
-  {/* USER MENU */}
-  <div className="relative" ref={userMenuRef}></div>
+              </button>
+
+              {isNotificationOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-80 z-50"
+                  data-notification-dropdown
+                >
+                  <NotificationDropdown />
+                </div>
+              )}
+
+            </div>
+          )}
 
           {/* USER MENU */}
           <div className="relative" ref={userMenuRef}>
+
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center gap-3 hover:bg-gray-100 px-3 py-1 rounded-lg"
             >
+
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
                 {displayName.charAt(0).toUpperCase()}
               </div>
@@ -198,14 +216,18 @@ const Navbar: React.FC<NavbarProps> = ({
                 <p className="font-medium text-sm">{displayName}</p>
                 <p className="text-xs text-gray-500">{displayEmail}</p>
               </div>
+
             </button>
 
             {isUserMenuOpen && (
+
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50">
 
                 <div className="p-4 border-b">
                   <p className="font-semibold">{displayName}</p>
-                  <p className="text-sm text-gray-500 truncate">{displayEmail}</p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {displayEmail}
+                  </p>
                 </div>
 
                 <button
@@ -239,11 +261,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 </button>
 
               </div>
+
             )}
+
           </div>
+
         </div>
 
       </div>
+
     </nav>
   );
 };
