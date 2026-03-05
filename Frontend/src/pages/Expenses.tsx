@@ -1,5 +1,4 @@
-import { useMonth } from "../contexts/MonthContext";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import TransactionForm from '../components/TransactionForm';
 import transactionService from '../services/transaction.service';
 import {
@@ -32,75 +31,99 @@ const CATEGORIES = [
 ];
 
 const Expenses: React.FC = () => {
-const { selectedMonth, selectedYear, setSelectedMonth, setSelectedYear } = useMonth();
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   
-
+  // Initialize filters with null values for "All Time"
+  const [month, setMonth] = useState<string | null>(null);
+  const [year, setYear] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const limit = 100000;
-
-  const fetchExpensesData = useCallback(async () => {
+  const fetchTransactions = async () => {
     try {
-      // Build query string manually to ensure month/year are always included
-      let queryString = `page=${page}&limit=${limit}`;
-      
-      if (selectedCategory !== "All") {
-       queryString += `&category=${encodeURIComponent(selectedCategory)}`;
+      let url = "/api/transactions?page=1&limit=100000";
+
+      if (month !== null && year !== null) {
+        url += `&month=${month}&year=${year}`;
       }
-      
-      // Always add month and year if they exist
-      if (selectedMonth !== 0 && selectedYear !== 0) {
-  queryString += `&month=${selectedMonth}&year=${selectedYear}`;
-}
-      
-      const response: any = await transactionService.getTransactions(`?${queryString}`);
+
+      console.log('Fetching transactions from:', url);
+      const response: any = await transactionService.getTransactions(`?${url.split('?')[1]}`);
+
+      console.log('API Response:', response);
 
       if (response.success && response.data) {
-  const transactionsArray =
-    response.data.transactions || [];
+        const transactionsArray = response.data.transactions || response.data || [];
+        console.log('Transactions array:', transactionsArray);
 
-const expensesData = transactionsArray.map((t: any) => ({
-  id: t.id,
-  amount: Number(t.amount),
-  type: t.type,
-  category: t.category,
-  description: t.description,
-  createdAt: t.created_at
-
+        const expensesData = transactionsArray.map((t: any) => ({
+          id: t.id,
+          amount: Number(t.amount),
+          type: t.type,
+          category: t.category,
+          description: t.description,
+          createdAt: t.created_at
         }));
 
+        console.log('Processed expenses data:', expensesData);
         setTransactions(expensesData);
         setTotalPages(response.data.totalPages || 1);
+      } else {
+        console.log('No success in response or no data');
+        setTransactions([]);
+        setTotalPages(1);
       }
     } catch (error) {
-      console.error("Expenses fetch error:", error);
+      console.error("Failed to fetch transactions:", error);
+      setTransactions([]);
     }
-  }, [selectedCategory, selectedMonth, selectedYear, page, limit]);
+  };
 
-  // Call fetchExpensesData when dependencies change
+  // Ensure fetchTransactions runs when page loads
   useEffect(() => {
-    fetchExpensesData();
-  }, [fetchExpensesData]);
+    console.log('Component mounted, fetching transactions...');
+    fetchTransactions();
+  }, []);
 
-const filteredTransactions = (transactions || []).filter((t) => {
-  if (t.type !== "expense") return false;
+  // Refetch when filters change
+  useEffect(() => {
+    console.log('Filters changed, fetching transactions...', { month, year, selectedCategory });
+    fetchTransactions();
+  }, [month, year, selectedCategory]);
 
-  if (selectedCategory === "All") return true;
+  const filteredTransactions = (transactions || []).filter((t) => {
+    if (t.type !== "expense") return false;
 
-  return t.category?.toLowerCase().trim() === selectedCategory.toLowerCase().trim();
-});
+    if (selectedCategory === "All") return true;
+
+    return t.category?.toLowerCase().trim() === selectedCategory.toLowerCase().trim();
+  });
+
   const formatCurrency = (amount: number) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
   };
+
+  const getFilterLabel = () => {
+    if (month === null && year === null) {
+      return "All Transactions";
+    } else if (month !== null && year !== null) {
+      const monthName = new Date(2024, parseInt(month) - 1).toLocaleString('default', { month: 'long' });
+      return `${monthName} ${year} Transactions`;
+    } else if (month !== null) {
+      const monthName = new Date(2024, parseInt(month) - 1).toLocaleString('default', { month: 'long' });
+      return `${monthName} Transactions`;
+    } else if (year !== null) {
+      return `${year} Transactions`;
+    }
+    return "All Transactions";
+  };
+
   return (
     <div className="space-y-8">
 
       <div className="flex flex-col md:flex-row md:items-center justify-between">
-
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Expenses</h1>
           <p className="text-gray-600">Track and manage all your expenses</p>
@@ -113,12 +136,11 @@ const filteredTransactions = (transactions || []).filter((t) => {
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Expense
         </button>
-
       </div>
 
       <div className="card">
         {/* Category Filters - Moved to Top */}
-        <div className="flex space-x-2 mt-6 overflow-x-auto pb-2">
+        <div className="flex flex-wrap gap-2 mt-6 pb-2">
           {CATEGORIES.map((category) => (
             <button
               key={category}
@@ -132,63 +154,69 @@ const filteredTransactions = (transactions || []).filter((t) => {
               {category}
             </button>
           ))}
-          
-          {/* Month Selector */}
-          <div className="flex items-center space-x-4">
+        </div>
+
+        {/* Date Filters */}
+        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center space-x-2">
             <CalendarIcon className="h-5 w-5 text-gray-400" />
+            <label className="text-sm font-medium text-gray-700">Month:</label>
             <select
-  value={
-    selectedMonth && selectedYear
-      ? `${selectedMonth}-${selectedYear}`
-      : ""
-  }
-  onChange={(e) => {
-  if (e.target.value === "") {
-    setSelectedMonth(0);
-    setSelectedYear(0);
-  } else {
-    const [month, year] = e.target.value.split("-");
-    setSelectedMonth(Number(month));
-    setSelectedYear(Number(year));
-  }
-}}
-  className="input-field py-2"
->
-  <option value="">All Time</option>
+              value={month || ""}
+              onChange={(e) => {
+                const value = e.target.value === "" ? null : e.target.value;
+                setMonth(value);
+                setPage(1);
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Time</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
 
-  {(() => {
-    const currentYear = new Date().getFullYear();
-    const years = [currentYear, currentYear - 1, currentYear - 2];
-
-    return years.flatMap((year) =>
-      Array.from({ length: 12 }, (_, i) => {
-        const monthNumber = i + 1;
-        const monthName = new Date(year, i).toLocaleString("default", {
-          month: "long",
-        });
-
-        return (
-          <option
-            key={`${monthNumber}-${year}`}
-            value={`${monthNumber}-${year}`}
-          >
-            {monthName} {year}
-          </option>
-        );
-      })
-    );
-  })()}
-</select>
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700">Year:</label>
+            <select
+              value={year || ""}
+              onChange={(e) => {
+                const value = e.target.value === "" ? null : e.target.value;
+                setYear(value);
+                setPage(1);
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Time</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
           </div>
         </div>
       </div>
 
       <div className="card">
+        {/* Filter Label */}
+        <div className="mb-4">
+          <p className="text-sm font-medium text-gray-600">
+            Showing: <span className="text-blue-600 font-semibold">{getFilterLabel()}</span>
+          </p>
+        </div>
 
         <div className="overflow-x-auto">
-
           <table className="w-full">
-
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Description</th>
@@ -200,65 +228,60 @@ const filteredTransactions = (transactions || []).filter((t) => {
             </thead>
 
             <tbody>
+              {filteredTransactions && filteredTransactions.length > 0 ? (
+                filteredTransactions.map((transaction) => {
+                  const date = transaction.createdAt || transaction.created_at;
 
-              {filteredTransactions.map((transaction) => {
+                  return (
+                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        {transaction.description || "No description"}
+                      </td>
 
-                const date = transaction.createdAt || transaction.created_at;
+                      <td className="py-3 px-4">
+                        {transaction.category}
+                      </td>
 
-                return (
+                      <td className="py-3 px-4 font-semibold">
+                        {formatCurrency(transaction.amount)}
+                      </td>
 
-                  <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        {date ? new Date(date).toLocaleDateString() : "No date"}
+                      </td>
 
-                    <td className="py-3 px-4">
-                      {transaction.description || "No description"}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      {transaction.category}
-                    </td>
-
-                    <td className="py-3 px-4 font-semibold">
-                      {formatCurrency(transaction.amount)}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      {date ? new Date(date).toLocaleDateString() : "No date"}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
-                    </td>
-
-                  </tr>
-
-                );
-
-              })}
-
+                      <td className="py-3 px-4">
+                        <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                    No transactions found
+                  </td>
+                </tr>
+              )}
             </tbody>
-
           </table>
-
         </div>
 
         <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-
           <p className="text-sm text-gray-600">
             Showing {filteredTransactions.length} expenses
           </p>
 
           <div className="flex items-center space-x-2">
-
             <button
               disabled={page === 1}
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage(prev => prev - 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >
               Previous
             </button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-
               <button
                 key={p}
                 onClick={() => setPage(p)}
@@ -270,52 +293,38 @@ const filteredTransactions = (transactions || []).filter((t) => {
               >
                 {p}
               </button>
-
             ))}
 
             <button
               disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage(prev => prev + 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >
               Next
             </button>
-
           </div>
-
         </div>
-
       </div>
 
       {showAddExpenseModal && (
-
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-
             <div className="flex justify-between items-center mb-6">
-
               <h2 className="text-xl font-semibold">Add Expense</h2>
-
               <button onClick={() => setShowAddExpenseModal(false)}>
                 <XMarkIcon className="h-6 w-6" />
               </button>
-
             </div>
 
             <TransactionForm
               onTransactionAdded={() => {
                 setShowAddExpenseModal(false);
-                fetchExpensesData();
+                fetchTransactions();
               }}
             />
-
           </div>
-
         </div>
-
       )}
-
     </div>
   );
 };

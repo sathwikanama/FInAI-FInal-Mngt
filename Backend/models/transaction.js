@@ -32,6 +32,37 @@ module.exports = (sequelize, DataTypes) => {
       description: {
         type: DataTypes.STRING,
       },
+
+      // OCR-specific fields
+      merchantName: {
+        type: DataTypes.STRING,
+        field: "merchant_name",
+      },
+
+      paymentMethod: {
+        type: DataTypes.STRING,
+        field: "payment_method",
+      },
+
+      transactionDate: {
+        type: DataTypes.DATEONLY,
+        field: "transaction_date",
+      },
+
+      ocrConfidence: {
+        type: DataTypes.FLOAT,
+        field: "ocr_confidence",
+      },
+
+      parsingConfidence: {
+        type: DataTypes.FLOAT,
+        field: "parsing_confidence",
+      },
+
+      rawText: {
+        type: DataTypes.TEXT,
+        field: "raw_text",
+      },
     },
     {
       tableName: "transactions",

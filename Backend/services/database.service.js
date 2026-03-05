@@ -32,24 +32,31 @@ const createUser = async (email, hashedPassword) => {
 };
 
 // Transaction related functions
-const createTransaction = async (userId, amount, type, category, description) => {
+const createTransaction = async (userId, amount, type, category, description, merchant_name = null, payment_method = null, transaction_date = null) => {
   const connection = await db.getConnection();
   try {
+    // Use provided transaction_date or current date
+    const dateToUse = transaction_date || new Date().toISOString().split('T')[0];
+    
     const [result] = await connection.execute(
       `INSERT INTO transactions 
-      (user_id, amount, type, category, description, created_at, updated_at) 
-      VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [userId, amount, type, category, description]
+      (user_id, amount, type, category, description, merchant_name, payment_method, transaction_date, created_at, updated_at) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [userId, amount, type, category, description, merchant_name, payment_method, dateToUse]
     );
 
+    // Return the complete transaction object
     return {
       id: result.insertId,
-      userId,
-      amount,
+      user_id: userId,
+      amount: parseFloat(amount),
       type,
       category,
       description,
-      createdAt: new Date().toISOString()
+      merchant_name,
+      payment_method,
+      transaction_date: dateToUse,
+      created_at: new Date().toISOString()
     };
   } finally {
     connection.release();
@@ -78,27 +85,21 @@ const queryParams = [Number(userId), 'expense'];
       queryParams.push(filters.category);
     }
 
-    // Add month/year filter if provided
-    if (filters.month && filters.year) {
-      whereConditions.push('MONTH(created_at) = ? AND YEAR(created_at) = ?');
-      queryParams.push(filters.month, filters.year);
-      console.log("📅 Month/Year filter added to SQL:", filters.month, filters.year);
-      console.log("📅 Updated WHERE conditions:", whereConditions);
-      console.log("📅 Updated query params:", queryParams);
-    } else if (filters.month) {
+    // Add month/year filter if provided (safer logic - only add if not "all")
+    if (filters.month && filters.month !== "all") {
       whereConditions.push('MONTH(created_at) = ?');
       queryParams.push(filters.month);
       console.log("📅 Month filter added to SQL:", filters.month);
       console.log("📅 Updated WHERE conditions:", whereConditions);
       console.log("📅 Updated query params:", queryParams);
-    } else if (filters.year) {
+    }
+    
+    if (filters.year && filters.year !== "all") {
       whereConditions.push('YEAR(created_at) = ?');
       queryParams.push(filters.year);
       console.log("📅 Year filter added to SQL:", filters.year);
       console.log("📅 Updated WHERE conditions:", whereConditions);
       console.log("📅 Updated query params:", queryParams);
-    } else {
-      console.log("📅 No month/year filter applied");
     }
 
     // Add search filter if provided
