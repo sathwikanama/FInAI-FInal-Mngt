@@ -68,10 +68,10 @@ params.set("year", selectedYear.toString());
         const response: any = await transactionService.getTransactions(
           `?${params.toString()}`
         );
-
+console.log("MonthContext API response:", response);
         const transactions =
-  response?.data?.transactions || [];
-
+  response?.data || [];
+console.log("Transactions received in MonthContext:", transactions);
         const totals: { [key: string]: number } = {};
 
         transactions.forEach((t: any) => {
@@ -81,7 +81,7 @@ params.set("year", selectedYear.toString());
               (totals[key] || 0) + Number(t.amount);
           }
         });
-
+console.log("Calculated category totals:", totals);
         setCategoryTotals(totals);
       } catch (error) {
         console.error("MonthContext calculation error:", error);
