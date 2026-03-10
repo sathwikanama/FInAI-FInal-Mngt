@@ -41,9 +41,10 @@ db.getConnection()
     console.log('✅ MySQL connected successfully');
     conn.release();
   })
-  .catch(err => {
-    console.error('❌ MySQL connection failed:', err.message);
-  });
+ .catch(err => {
+  console.error('❌ MySQL connection failed:');
+  console.error(err);
+});
 
 
 
