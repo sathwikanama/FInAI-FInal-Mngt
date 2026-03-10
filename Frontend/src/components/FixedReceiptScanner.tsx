@@ -91,7 +91,7 @@ const FixedReceiptScanner: React.FC<FixedReceiptScannerProps> = ({ className = '
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/transactions?limit=10', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions?limit=10', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -286,7 +286,7 @@ const FixedReceiptScanner: React.FC<FixedReceiptScannerProps> = ({ className = '
       formData.append('receipt', uploadedFile);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/ocr/scan', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/ocr/scan', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -355,7 +355,7 @@ const FixedReceiptScanner: React.FC<FixedReceiptScannerProps> = ({ className = '
 
       console.log('Transaction payload:', transactionPayload);
 
-      const response = await fetch('http://localhost:5001/api/transactions', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

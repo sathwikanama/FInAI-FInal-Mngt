@@ -13,7 +13,7 @@ const MessageDisplay: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/message');
+        const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/message');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

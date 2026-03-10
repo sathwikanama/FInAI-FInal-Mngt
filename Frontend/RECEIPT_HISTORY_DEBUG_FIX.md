@@ -102,7 +102,7 @@ const saveTransaction = async () => {
 
     console.log('💾 Transaction payload:', transactionPayload);
 
-    const response = await fetch('http://localhost:5001/api/transactions', {
+    const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ const fetchReceiptHistory = useCallback(async () => {
 
     // Cache busting to prevent stale data
     const timestamp = Date.now();
-    const response = await fetch(`http://localhost:5001/api/transactions?limit=10&_t=${timestamp}`, {
+    const response = await fetch(`https://finai-final-mngt-production.up.railway.app/api/transactions?limit=10&_t=${timestamp}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',

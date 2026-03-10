@@ -33,7 +33,7 @@ const Recommendations: React.FC = () => {
         setError(null);
         
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5001/api/recommendations/test', {
+        const response = await axios.get('https://finai-final-mngt-production.up.railway.app/api/recommendations/test', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ const Recommendations: React.FC = () => {
           setError(null);
           
           const token = localStorage.getItem('token');
-          const response = await axios.get('http://localhost:5001/api/recommendations/test', {
+          const response = await axios.get('https://finai-final-mngt-production.up.railway.app/api/recommendations/test', {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'

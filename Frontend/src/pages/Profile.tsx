@@ -31,7 +31,7 @@ const Profile: React.FC = () => {
       if (!token) return;
 
       try {
-        const res = await fetch("http://localhost:5001/api/profile", {
+        const res = await fetch("https://finai-final-mngt-production.up.railway.app/api/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -65,7 +65,7 @@ const Profile: React.FC = () => {
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:5001/api/profile", {
+      const res = await fetch("https://finai-final-mngt-production.up.railway.app/api/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

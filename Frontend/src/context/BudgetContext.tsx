@@ -46,7 +46,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const fetchBudget = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/budget/settings', {
+      const response = await axios.get('https://finai-final-mngt-production.up.railway.app/api/budget/settings', {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const fetchExpenses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/transactions?page=1&limit=100000', {
+      const response = await axios.get('https://finai-final-mngt-production.up.railway.app/api/transactions?page=1&limit=100000', {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -99,7 +99,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const updateBudget = async (budgetData: { monthlyBudget: number; categoryBudgets: Record<string, number> }) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5001/api/budget/settings', {
+      const response = await axios.post('https://finai-final-mngt-production.up.railway.app/api/budget/settings', {
         monthlyBudget: budgetData.monthlyBudget,
         categoryBudgets: budgetData.categoryBudgets,
         alertThreshold: 80 // Default threshold

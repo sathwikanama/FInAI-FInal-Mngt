@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL = "https://finai-final-mngt-production.up.railway.app/api";
 
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");

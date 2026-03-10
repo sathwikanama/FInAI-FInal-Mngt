@@ -81,7 +81,7 @@ const EnhancedReceiptScanner: React.FC<EnhancedReceiptScannerProps> = ({ classNa
 
       // Add cache busting to prevent cached responses
       const timestamp = Date.now();
-      const response = await fetch(`http://localhost:5001/api/transactions?limit=10&_t=${timestamp}`, {
+      const response = await fetch(`https://finai-final-mngt-production.up.railway.app/api/transactions?limit=10&_t=${timestamp}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ const EnhancedReceiptScanner: React.FC<EnhancedReceiptScannerProps> = ({ classNa
       formData.append('receipt', uploadedFile);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/ocr/scan', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/ocr/scan', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -361,7 +361,7 @@ const EnhancedReceiptScanner: React.FC<EnhancedReceiptScannerProps> = ({ classNa
 
       console.log('Transaction payload:', transactionPayload);
 
-      const response = await fetch('http://localhost:5001/api/transactions', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

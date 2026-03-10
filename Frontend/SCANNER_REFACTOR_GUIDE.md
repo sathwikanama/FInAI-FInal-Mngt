@@ -225,7 +225,7 @@ const [imageLoaded, setImageLoaded] = useState(false);
 const result = await ocrService.scanReceipt(uploadedFile);
 
 // Transaction Save
-const response = await fetch('http://localhost:5001/api/transactions', {
+const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

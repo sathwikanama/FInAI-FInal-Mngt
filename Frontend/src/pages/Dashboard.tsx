@@ -10,7 +10,7 @@ import useRefreshData from '../hooks/useRefreshData';
 const insightsService = {
   getInsights: async (month?: string | null, year?: string | null) => {
     const token = localStorage.getItem('token');
-    let url = 'http://localhost:5001/api/insights';
+    let url = 'https://finai-final-mngt-production.up.railway.app/api/insights';
     
     if (month && year) {
       url += `?month=${month}&year=${year}`;

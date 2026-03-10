@@ -13,7 +13,7 @@ export const ocrService = {
     formData.append('receipt', file);
     
     try {
-      console.log('📤 Sending request to: http://localhost:5001/api/ocr/scan');
+      console.log('📤 Sending request to: https://finai-final-mngt-production.up.railway.app/api/ocr/scan');
       console.log('📋 FormData contents:');
       formData.forEach((value, key) => {
         console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);

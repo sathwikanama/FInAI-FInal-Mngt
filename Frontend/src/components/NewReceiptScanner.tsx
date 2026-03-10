@@ -204,7 +204,7 @@ const NewReceiptScanner: React.FC<NewReceiptScannerProps> = ({ className = '' })
     if (!scanResult) return;
 
     try {
-      const response = await fetch('http://localhost:5001/api/transactions', {
+      const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

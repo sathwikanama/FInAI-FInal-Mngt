@@ -108,7 +108,7 @@ canvas.toBlob((blob) => {
 ```typescript
 const fetchReceiptHistory = async () => {
   const token = localStorage.getItem('token');
-  const response = await fetch('http://localhost:5001/api/transactions?limit=10', {
+  const response = await fetch('https://finai-final-mngt-production.up.railway.app/api/transactions?limit=10', {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const data = await response.json();

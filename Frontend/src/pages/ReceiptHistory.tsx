@@ -4,7 +4,7 @@ const ReceiptHistory = () => {
   const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/ocr/history")
+    fetch("https://finai-final-mngt-production.up.railway.app/api/ocr/history")
       .then(res => res.json())
       .then(data => {
         if (data.success) {
