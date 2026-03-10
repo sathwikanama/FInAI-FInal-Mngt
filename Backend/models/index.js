@@ -1,14 +1,20 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const config = require("../config/database");
 
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
   {
-    host: config.host,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     dialect: "mysql",
     logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   }
 );
 
@@ -18,8 +24,6 @@ const User = require("./user")(sequelize, DataTypes);
 const Transaction = require("./transaction")(sequelize, DataTypes);
 const Profile = require("./profile")(sequelize, DataTypes);
 
-
-// Collect models
 const db = {
   sequelize,
   Sequelize,
@@ -29,8 +33,7 @@ const db = {
   Profile
 };
 
-
-// Associations (after db is defined)
+// Associations
 db.User.hasOne(db.Profile, { foreignKey: "user_id" });
 db.Profile.belongsTo(db.User, { foreignKey: "user_id" });
 
