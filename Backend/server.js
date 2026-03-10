@@ -116,7 +116,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_PORT:", process.env.DB_PORT);
 // =======================
 // ▶️ START SERVER
 // =======================
