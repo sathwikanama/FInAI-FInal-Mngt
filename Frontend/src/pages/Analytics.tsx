@@ -45,7 +45,7 @@ const Analytics: React.FC = () => {
         }
 
         const response = await api.get(
-          `/api/analytics/${user.id}`,
+          `/analytics/${user.id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
